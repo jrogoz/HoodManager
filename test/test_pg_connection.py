@@ -1,63 +1,63 @@
 import unittest
 import psycopg2 as pg2
-#from pg_connection import load_config, connect, disconnect
-class TestPgConnection(unittest.TestCase):
+from pg_connection import load_config, connect, disconnect
 
-    def test_load_config(self):
+
+class TestLoadConfig(unittest.TestCase):
+
+    def test_load_config_happy_path(self):
         config = load_config()
         self.assertIsInstance(config, dict)
         self.assertEqual(len(config.keys()), 5)
 
-        expected_keys = ['host', 'databese', 'user', 'password', 'port']
+        expected_keys = ['host', 'database', 'user', 'password', 'port']
         for key in expected_keys:
             self.assertIn(key, config.keys())
 
+    def test_load_config_filename_does_not_exist(self):
+        config = load_config('invalid_db.ini')
+        self.assertIsInstance(config, dict)
+        self.assertEqual(config, {})
+
+    def test_load_config_invalid_section(self):
+        config = load_config(section='invalid_section')
+        self.assertIsInstance(config, dict)
+        self.assertEqual(config, {})
+
+
+class TestPgConnection(unittest.TestCase):
+    def setUp(self):
+        self.config = load_config()
+
     def test_connection_happy_path(self):
-        test_db = 'test_hm'
-        user = 'postgres'
-        port = 5433
-        password = '12345'
-        host = 'localhost'
-
-        conn, cur = connect(db=test_db, user=user, password=password, port=port, host=host)
-
+        conn, cur = connect(self.config)
         self.assertIsNotNone(conn)
         self.assertIsInstance(conn, pg2.extensions.connection)
-
         self.assertIsNotNone(cur)
-        self.assertIsInstance(conn, pg2.extensions.cursor)
+        self.assertIsInstance(cur, pg2.extensions.cursor)
+        self.assertFalse(conn.closed)
 
     def test_connection_invalid_db_name(self):
-        test_db = 'invalid_db'
-        user = 'postgres'
-        port = 5433
-        password = '12345'
-        host = 'localhost'
-
-        conn, cur = connect(db=test_db, user=user, password=password, port=port, host=host)
+        self.config['database'] = 'invalid_db'
+        conn, cur = connect(self.config)
         self.assertRaises(pg2.OperationalError)
         self.assertIsNone(conn)
         self.assertIsNone(cur)
 
     def test_connection_invalid_port_number(self):
-        test_db = 'invalid_db'
-        user = 'postgres'
-        port = 5432
-        password = '12345'
-        host = 'localhost'
-
-        conn, cur = connect(db=test_db, user=user, password=password, port=port, host=host)
+        self.config['port'] = 5432
+        conn, cur = connect(self.config)
         self.assertRaises(pg2.OperationalError)
         self.assertIsNone(conn)
         self.assertIsNone(cur)
 
 
-conn = pg2.connect(database='dvdrental', user='postgres', password='12345',port=5432)
-cur = conn.cursor()
-print(type(cur))
-print(pg2.extensions.connection)
+class TestPgDisconnection(unittest.TestCase):
+    def setUp(self):
+        config = load_config()
+        self.conn, self.cur = connect(config)
 
-print(type(cur) is pg2.extensions.cursor)
-
-
-print(type({}))
+    def test_disconnect(self):
+        disconnect(self.conn, self.cur)
+        self.assertTrue(self.conn.closed)
+        self.assertTrue(self.cur.closed)
