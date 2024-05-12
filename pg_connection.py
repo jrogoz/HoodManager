@@ -23,12 +23,16 @@ def load_config(filename='database.ini', section='postgresql') -> dict:
         return {}
 
 
-def connect(config: dict):
+def connect(config: dict = None):
     """
     Make a database connection using given config data
     :param config: database connection params
     :return: database connection and cursor
     """
+
+    if config is None:
+        config = load_config()
+
     try:
         conn = pg2.connect(**config)
         cur = conn.cursor()
@@ -37,7 +41,7 @@ def connect(config: dict):
         return None, None
 
 
-def disconnect(conn, cur) -> None:
+def disconnect(conn=None, cur=None) -> None:
     """
     Close database connection
     :return: None
