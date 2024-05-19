@@ -19,13 +19,16 @@ class Sim(BaseModel):
         """Gets sim by id """
 
         conn, cur = connect()
-        cur.execute("SELECT * FROM sims WHERE id={}".format(sim_id))
+        cur.execute("SELECT * FROM sims WHERE id='{}'".format(sim_id))
         record = cur.fetchone()
 
         if record is None:
             raise NotFound
 
-        sim = cls(**record)  # to unpack row as dict
+        keys = ['id', 'first_name', 'last_name', 'is_alive']
+        data = dict(zip(keys, record))
+
+        sim = cls(**data)  # to unpack row as dict
         disconnect(conn, cur)
         return sim
 
@@ -34,13 +37,16 @@ class Sim(BaseModel):
         """Gets sim by id """
 
         conn, cur = connect()
-        cur.execute("SELECT * FROM sims WHERE first_name={0} AND last_name={1}".format(first_name, last_name))
+        cur.execute("SELECT * FROM sims WHERE first_name='{0}' AND last_name='{1}'".format(first_name, last_name))
         record = cur.fetchone()
 
         if record is None:
             raise NotFound
 
-        sim = cls(**record)  # to unpack row as dict
+        keys = ['id', 'first_name', 'last_name', 'is_alive']
+        data = dict(zip(keys, record))
+
+        sim = cls(**data)  # to unpack row as dict
         disconnect(conn, cur)
         return sim
 
@@ -52,7 +58,10 @@ class Sim(BaseModel):
         cur.execute("SELECT * FROM sims")
 
         records = cur.fetchall()
-        sims = [cls(**record) for record in records]
+
+        keys = ['id', 'first_name', 'last_name', 'is_alive']
+        data = [dict(zip(keys, record)) for record in records]
+        sims = [cls(**item) for item in data]
         disconnect(conn, cur)
         return sims
 
@@ -73,6 +82,24 @@ class Sim(BaseModel):
         conn, cur = connect()
         cur.execute(
             "CREATE TABLE IF NOT EXISTS sims (id TEXT, first_name TEXT, last_name TEXT, is_alive BOOLEAN);"
+        )
+        conn.commit()
+        disconnect(conn)
+
+    @classmethod
+    def delete_table(cls):
+        conn, cur = connect()
+        cur.execute(
+            "DROP TABLE IF EXISTS sims"
+        )
+        conn.commit()
+        disconnect(conn)
+
+    @classmethod
+    def delete_sims(cls):
+        conn, cur = connect()
+        cur.execute(
+            "DELETE FROM sims"
         )
         conn.commit()
         disconnect(conn)

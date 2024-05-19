@@ -10,6 +10,13 @@ class TestAddSimCommand(unittest.TestCase):
     def setUpClass(cls):
         Sim.create_table()
 
+    @classmethod
+    def tearDownClass(cls):
+        Sim.delete_table()
+
+    def tearDown(self):
+        Sim.delete_sims()
+
     def test_add_sim(self):
         """
         GIVEN AddSimCommand with valid first_name, last_name, and is_alive properties
