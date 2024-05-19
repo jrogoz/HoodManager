@@ -6,6 +6,10 @@ from residents.commands import AddSimCommand, AlreadyExists
 
 class TestAddSimCommand(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        Sim.create_table()
+
     def test_add_sim(self):
         """
         GIVEN AddSimCommand with valid first_name, last_name, and is_alive properties
