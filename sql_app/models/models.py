@@ -18,7 +18,7 @@ class Sim(Base):
     hair_color = Column(Enum(Hair))
     eye_color = Column(Enum(Eyes))
     skin_tone = Column(Enum(Skin))
-    race = Column(Enum(Race))
+    race = Column(Enum(Race), default=Race.HUMAN)
     life_stage = Column(Enum(LifeStage), default=LifeStage.BABY)
     sexual_orientation = Column(Enum(SexualOrient), default=SexualOrient.NOT_SPECIFIED)
 
