@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-import schemas
-from models import models
+from . import schemas
+from .models import models
 
 
 def get_sim(db: Session, sim_id: int):

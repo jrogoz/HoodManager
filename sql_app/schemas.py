@@ -1,7 +1,7 @@
 import datetime
 
 from pydantic import BaseModel, ConfigDict
-from models.enums import *
+from .models.enums import *
 
 
 class SimBase(BaseModel):
