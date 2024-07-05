@@ -62,6 +62,7 @@ class Sim(BaseModel):
         keys = ['id', 'first_name', 'last_name', 'is_alive']
         data = [dict(zip(keys, record)) for record in records]
         sims = [cls(**item) for item in data]
+
         disconnect(conn, cur)
         return sims
 
