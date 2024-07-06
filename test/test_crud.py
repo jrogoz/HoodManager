@@ -51,7 +51,7 @@ def test_create_sim_default_values(db_session):
 
         hair_color=Hair.BLACK,
         eye_color=Eyes.BROWN,
-        skin_tone=Skin.MEDIUM,
+        skin_tone=Skin.MEDIUM
     )
     sim_db = crud.create_sim(db_session, sim=sim)
 
@@ -61,3 +61,66 @@ def test_create_sim_default_values(db_session):
     assert sim_db.race == Race.HUMAN
     assert sim_db.life_stage == LifeStage.BABY
     assert sim_db.sexual_orientation == SexualOrient.STRAIGHT
+
+
+def test_get_sim(db_session):
+    sim = crud.create_sim(db_session, SimCreate(
+        first_name='Bella',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM
+    ))
+    sim_db = crud.get_sim(db_session, sim_id=sim.id)
+
+    assert sim_db is not None
+
+    assert sim_db.id == sim.id
+    assert sim_db.is_alive == sim.is_alive
+    assert sim_db.be_reproduced == sim.be_reproduced
+    assert sim_db.last_update == sim.last_update
+    assert sim_db.race == sim.race
+    assert sim_db.sexual_orientation == sim.sexual_orientation
+
+    assert sim_db.first_name == sim.first_name
+    assert sim_db.last_name == sim.last_name
+    assert sim.hair_color == sim.hair_color
+    assert sim.eye_color == sim.eye_color
+    assert sim.skin_tone == sim.skin_tone
+
+
+def test_get_sim_not_exists(db_session):
+    sim_db = crud.get_sim(db_session, sim_id=1)
+
+    assert sim_db is None
+
+
+def test_get_sims(db_session):
+    crud.create_sim(db_session, SimCreate(
+        first_name='Bella',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM
+    ))
+    crud.create_sim(db_session, SimCreate(
+        first_name='Mortimer',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM
+    ))
+    sims_db = crud.get_sims(db_session)
+
+    assert sims_db is not None
+    assert isinstance(sims_db, list)
+    assert len(sims_db) == 2
+
+
+def test_get_sims_no_sims(db_session):
+    sims_db = crud.get_sims(db_session)
+
+    assert sims_db is None
