@@ -1,13 +1,14 @@
 from fastapi import Depends, FastAPI, HTTPException
+import uvicorn
 from sqlalchemy.orm import Session
 
-from . import crud, schemas
-from .models import models
-from .database import SessionLocal, engine
+from sql_app import crud, schemas
+from sql_app.models import models
+from sql_app.database import SessionLocal, engine
 
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
 
 # Dependency
 def get_db():
@@ -17,6 +18,10 @@ def get_db():
     finally:
         db.close()
 
+
+@app.get('/')
+def index():
+    return {"msg": 'Just working'}
 
 @app.post("/sims/", response_model=schemas.Sim)
 def create_sim(sim: schemas.SimCreate, db: Session = Depends(get_db)):
@@ -34,3 +39,7 @@ def read_sim(sim_id: int, db: Session = Depends(get_db)):
 @app.get('/sims/', response_model=list[schemas.Sim])
 def read_sims(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_sims(db, skip=skip, limit=limit)
+
+
+if __name__ == '__main__':
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")
