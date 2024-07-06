@@ -1,11 +1,20 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, URL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = 'postgrersql://postgres:12345@db_server/HoodManagerDB'
+SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:12345@db/HoodManagerDB'
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+URL_OBJECT = URL.create(
+    'postgresql',
+    username='postgres',
+    password='12345',
+    host='localhost',
+    database='HoodManagerDB',
+    port=5432
+)
 
-SessionLocal = sessionmaker(autocommit=False,autoflush=False, bind=engine)
+engine = create_engine(URL_OBJECT)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
