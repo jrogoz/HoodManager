@@ -3,7 +3,7 @@ import datetime
 from sqlalchemy import Boolean, Column, Integer, String, Enum, DateTime
 
 from sql_app.database import Base
-from enums import *
+from .enums import *
 
 
 class Sim(Base):

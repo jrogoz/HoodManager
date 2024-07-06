@@ -5,8 +5,8 @@ from .models.enums import *
 
 
 class SimBase(BaseModel):
-    first_name: int
-    last_name: int
+    first_name: str
+    last_name: str
 
     hair_color: Hair
     eye_color: Eyes
