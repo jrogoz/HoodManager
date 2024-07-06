@@ -11,9 +11,12 @@ class SimBase(BaseModel):
     hair_color: Hair
     eye_color: Eyes
     skin_tone: Skin
-    race: Race
-    life_stage: LifeStage
-    sexual_orientation: SexualOrient
+    race: Race | None = Race.HUMAN
+    life_stage: LifeStage | None = LifeStage.BABY
+    sexual_orientation: SexualOrient | None = SexualOrient.STRAIGHT
+
+    is_alive: bool | None = True
+    be_reproduced: bool | None = True
 
 
 class SimCreate(SimBase):
@@ -24,6 +27,4 @@ class Sim(SimBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    is_alive: bool
-    be_reproduced: bool
     last_update: datetime.datetime
