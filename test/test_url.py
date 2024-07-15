@@ -97,3 +97,83 @@ def test_create_sim_default_values(client):
 
     assert sim_url['is_alive'] == True
     assert sim_url['be_reproduced'] == True
+
+
+def test_read_sim(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim = response.json()
+    sim_id = sim['id']
+
+    response = client.get(f'/sims/{sim_id}')
+
+    assert response is not None
+    assert response.status_code == 200
+
+    assert response.json() is not None
+    
+    readed_sim = response.json()
+
+    assert readed_sim['id'] == sim['id']
+    assert readed_sim['last_update'] == sim['last_update']
+
+    assert readed_sim['is_alive'] == sim['is_alive']
+    assert readed_sim['be_reproduced'] == sim['be_reproduced']
+
+    assert readed_sim['first_name'] == sim['first_name']
+    assert readed_sim['last_name'] == sim['last_name']
+
+    assert readed_sim['hair_color'] == sim['hair_color']
+    assert readed_sim['eye_color'] == sim['be_reproduced']
+    assert readed_sim['skin_tone'] == sim['skin_tone']
+
+    assert readed_sim['race'] == sim['race']
+    assert readed_sim['life_stage'] == sim['life_stage']
+    assert readed_sim['sexual_orientation'] == sim['sexual_orientation']
+
+
+def test_read_sims(client):
+    client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Mortimer',
+                last_name= 'Goth',
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.TAN,
+    )))
+
+    response = client.get(f'/sims/')
+
+    assert response is not None
+    assert response.status_code == 200
+
+    assert response.json() is not None
+
+    sims = response.json()
+
+    assert sims is not None
+    assert isinstance(sims, list)
+    assert len(sims) == 2

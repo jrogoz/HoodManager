@@ -23,7 +23,7 @@ def get_db():
 def index():
     return {"msg": 'Just working'}
 
-@app.post("/sims/", response_model=schemas.Sim)
+@app.post("/sims/", response_model=schemas.Sim, status_code=201)
 def create_sim(sim: schemas.SimCreate, db: Session = Depends(get_db)):
     return crud.create_sim(db, sim=sim)
 
