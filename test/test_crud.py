@@ -123,4 +123,5 @@ def test_get_sims(db_session):
 def test_get_sims_no_sims(db_session):
     sims_db = crud.get_sims(db_session)
 
-    assert sims_db is None
+    assert sims_db is not None
+    assert sims_db == []
