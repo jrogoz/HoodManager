@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy.orm import Session
 
 from . import schemas
@@ -19,3 +21,14 @@ def create_sim(db: Session, sim: schemas.SimCreate):
     db.refresh(db_sim)
     return db_sim
 
+
+def update_sim(db: Session, sim_id, sim_update = schemas.SimBase):
+    db_sim = db.query(models.Sim).filter(models.Sim.id == sim_id).first()
+    if db_sim:
+        for key, value in sim_update.model_dump(exclude_unset=True).items():
+            setattr(db_sim, key, value)
+        setattr(db_sim, 'last_update', datetime.datetime.now())
+        db.commit()
+        db.refresh(db_sim)
+        return db_sim
+    return None 

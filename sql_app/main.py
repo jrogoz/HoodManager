@@ -41,5 +41,13 @@ def read_sims(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_sims(db, skip=skip, limit=limit)
 
 
+@app.put('/sims/{sim_id}', response_model=schemas.Sim)
+def update_sim(sim_id: int, sim_update: schemas.SimBase, db: Session = Depends(get_db)):
+    db_sim = crud.update_sim(db, sim_id=sim_id, sim_update=sim_update)
+    if db_sim is None:
+        raise HTTPException(status_code=404, detail='Sim not found')
+    return db_sim
+
+
 if __name__ == '__main__':
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")

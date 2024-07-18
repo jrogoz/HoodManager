@@ -2,7 +2,7 @@ import datetime
 
 from sql_app import crud
 
-from sql_app.schemas import SimCreate
+from sql_app.schemas import SimCreate, SimBase
 from sql_app.models.enums import *
 
 
@@ -125,3 +125,52 @@ def test_get_sims_no_sims(db_session):
 
     assert sims_db is not None
     assert sims_db == []
+
+
+def test_update_sim(db_session):
+    sim = crud.create_sim(db_session, SimCreate(
+        first_name='Bella',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM
+    ))
+
+    create_date = sim.last_update
+
+    sim_update = SimBase(
+        first_name='new name',
+        last_name='new last name',
+
+        hair_color=Hair.BLONDE,
+        eye_color=Eyes.ALIEN,
+        skin_tone=Skin.DARK
+    )
+    sim_db = crud.update_sim(db_session, sim.id, sim_update)
+
+    assert sim_db is not None
+
+    assert sim_db.last_update != create_date  # not sim.last_update bc its already updated (the same memory address)
+    assert sim_db.last_update > create_date
+
+    assert sim_db.first_name == sim_update.first_name
+    assert sim_db.last_name == sim_update.last_name
+
+    assert sim_db.hair_color == sim_update.hair_color
+    assert sim_db.eye_color == sim_update.eye_color
+    assert sim_db.skin_tone == sim_update.skin_tone
+
+
+def test_update_sim_not_exists(db_session):
+    sim_update = SimBase(
+        first_name='new name',
+        last_name='new last name',
+
+        hair_color=Hair.BLONDE,
+        eye_color=Eyes.ALIEN,
+        skin_tone=Skin.DARK
+    )
+    sim_db = crud.update_sim(db_session, sim_id=100, sim_update=sim_update)
+
+    assert sim_db is None
