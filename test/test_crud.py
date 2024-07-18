@@ -174,3 +174,74 @@ def test_update_sim_not_exists(db_session):
     sim_db = crud.update_sim(db_session, sim_id=100, sim_update=sim_update)
 
     assert sim_db is None
+
+
+def test_grow_up_sim(db_session):
+    sim = crud.create_sim(db_session, SimCreate(
+        first_name='Bella',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM,
+
+        life_stage=LifeStage.CHILD
+    ))
+
+    create_date = sim.last_update
+    old_life_stage = sim.life_stage
+
+    sim_db = crud.grow_up_sim(db_session, sim_id=sim.id)
+
+    assert sim_db is not None
+    assert sim_db.life_stage == old_life_stage.next()
+
+    assert sim_db.last_update != create_date
+    assert sim_db.last_update > create_date
+
+
+def test_grow_up_sim_default_life_stage(db_session):
+    sim = crud.create_sim(db_session, SimCreate(
+        first_name='Bella',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM
+    ))
+
+    create_date = sim.last_update
+    old_life_stage = sim.life_stage
+
+    sim_db = crud.grow_up_sim(db_session, sim_id=sim.id)
+
+    assert sim_db is not None
+
+    assert sim_db.life_stage == old_life_stage.next()
+    assert sim_db.life_stage == LifeStage.TODDLER
+    
+    assert sim_db.last_update != create_date
+    assert sim_db.last_update > create_date
+
+
+def test_grow_up_sim_not_exists(db_session):
+    sim_db = crud.grow_up_sim(db_session, sim_id=100)
+
+    assert sim_db is None
+
+
+def test_try_grow_up_elder_sim(db_session):
+    sim = crud.create_sim(db_session, SimCreate(
+        first_name='Bella',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM,
+
+        life_stage=LifeStage.ELDER
+    ))
+
+    sim_db = crud.grow_up_sim(db_session, sim_id=sim.id)
+
+    assert sim_db is None
