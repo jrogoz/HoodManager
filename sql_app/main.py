@@ -49,5 +49,16 @@ def update_sim(sim_id: int, sim_update: schemas.SimBase, db: Session = Depends(g
     return db_sim
 
 
+@app.put('/sims/{sim_id}/grow_up', response_model=schemas.Sim)
+def grow_up_sim(sim_id: int, db: Session = Depends(get_db)):
+    try:
+        db_sim = crud.grow_up_sim(db, sim_id=sim_id)
+        if db_sim is None:
+            raise HTTPException(status_code=404, detail='Sim not found')
+        return db_sim
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=e)
+
+
 if __name__ == '__main__':
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")
