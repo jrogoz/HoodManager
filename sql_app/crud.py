@@ -38,7 +38,7 @@ def grow_up_sim(db: Session, sim_id: int):
     db_sim = db.query(models.Sim).filter(models.Sim.id == sim_id).first()
     if db_sim:
         if db_sim.life_stage == enums.LifeStage.ELDER:
-            return None
+            raise ValueError("Elders can't grow up")
         setattr(db_sim, 'life_stage', db_sim.life_stage.next())
         setattr(db_sim, 'last_update', datetime.datetime.now())
         db.commit()

@@ -1,4 +1,5 @@
 import datetime
+import pytest
 
 from sql_app import crud
 
@@ -242,6 +243,9 @@ def test_try_grow_up_elder_sim(db_session):
         life_stage=LifeStage.ELDER
     ))
 
-    sim_db = crud.grow_up_sim(db_session, sim_id=sim.id)
+    with pytest.raises(Exception) as e_info:
+        crud.grow_up_sim(db_session, sim_id=sim.id)
 
-    assert sim_db is None
+    assert e_info is not None
+    assert e_info.type == ValueError
+    assert str(e_info.value) == 'Elders can\'t grow up'
