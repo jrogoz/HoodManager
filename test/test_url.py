@@ -250,6 +250,8 @@ def test_grow_up_sim(client):
                 first_name= 'Bella',
                 last_name= 'Goth',
 
+                life_stage=LifeStage.ADULT,
+
                 hair_color= Hair.BLACK,
                 eye_color= Eyes.BROWN,
                 skin_tone= Skin.MEDIUM,
@@ -271,6 +273,81 @@ def test_grow_up_sim(client):
     sim_db = response.json()
 
     assert LifeStage(sim_db['life_stage']) == LifeStage(old_life_stage).next()
-    
+
     assert sim_db['last_update'] != create_date
     assert sim_db['last_update'] > create_date
+
+
+def test_grow_up_default_life_stage(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim_id = response.json()['id']
+    old_life_stage = response.json()['life_stage']
+    create_date = response.json()['last_update']
+
+    response = client.put(
+        f'sims/{sim_id}/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+
+    assert response.json() is not None
+
+    sim_db = response.json()
+
+    assert LifeStage(sim_db['life_stage']) == LifeStage.TODDLER
+
+    assert sim_db['last_update'] != create_date
+    assert sim_db['last_update'] > create_date
+
+
+def test_grow_up_sim_not_exists(client):
+    response = client.put(
+        f'sims/1010/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 404
+
+    assert response.json() is not None
+    assert response.json() == {'detail': 'Sim not found'}
+
+
+def test_try_grow_up_elder(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                life_stage=LifeStage.ELDER,
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim_id = response.json()['id']
+
+    response = client.put(
+        f'sims/{sim_id}/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 400
+
+    assert response.json() is not None
+    assert response.json() == {'detail': 'Elders can\'t grow up'}

@@ -3,7 +3,7 @@ import uvicorn
 from sqlalchemy.orm import Session
 
 from sql_app import crud, schemas
-from sql_app.models import models
+from sql_app.models import models, enums
 from sql_app.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -51,13 +51,13 @@ def update_sim(sim_id: int, sim_update: schemas.SimBase, db: Session = Depends(g
 
 @app.put('/sims/{sim_id}/grow_up', response_model=schemas.Sim)
 def grow_up_sim(sim_id: int, db: Session = Depends(get_db)):
-    try:
-        db_sim = crud.grow_up_sim(db, sim_id=sim_id)
-        if db_sim is None:
-            raise HTTPException(status_code=404, detail='Sim not found')
-        return db_sim
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=e)
+    sim = crud.get_sim(db, sim_id)
+    if sim is None:
+        raise HTTPException(status_code=404, detail='Sim not found')
+    if sim.life_stage == enums.LifeStage.ELDER:
+        raise HTTPException(status_code=400, detail='Elders can\'t grow up')
+    db_sim = crud.grow_up_sim(db, sim_id=sim_id)
+    return db_sim
 
 
 if __name__ == '__main__':
