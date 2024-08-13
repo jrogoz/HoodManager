@@ -3,16 +3,10 @@ import datetime
 from fastapi.testclient import TestClient
 from fastapi.encoders import jsonable_encoder
 
-from sql_app.main import read_sim, read_sims, create_sim
 from sql_app import crud
-from sql_app.schemas import SimCreate
+from sql_app.schemas import SimCreate, SimBase
 from sql_app.models.enums import *
-from sql_app.main import app, get_db
 
-
-# app.dependency_overrides[get_db] = override_get_db
-#
-# client = TestClient(app)
 
 def test_create_sim(client):
     sim = SimCreate(
@@ -177,3 +171,183 @@ def test_read_sims(client):
     assert sims is not None
     assert isinstance(sims, list)
     assert len(sims) == 2
+
+
+def test_update_sim(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim_id = response.json()['id']
+    create_date = response.json()['last_update']
+
+    sim_update = SimBase(
+        first_name='new name',
+        last_name='new last name',
+
+        hair_color=Hair.BLONDE,
+        eye_color=Eyes.ALIEN,
+        skin_tone=Skin.DARK
+    )
+
+    response = client.put(
+        f'sims/{sim_id}',
+        json=jsonable_encoder(sim_update)
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+
+    assert response.json() is not None
+
+    sim_db = response.json()
+    
+    assert sim_db['last_update'] != create_date  # not sim.last_update bc its already updated (the same memory address)
+    assert sim_db['last_update'] > create_date
+
+    assert sim_db['first_name'] == sim_update.first_name
+    assert sim_db['last_name'] == sim_update.last_name
+
+    assert Hair(sim_db['hair_color']) == sim_update.hair_color
+    assert Eyes(sim_db['eye_color']) == sim_update.eye_color
+    assert Skin(sim_db['skin_tone']) == sim_update.skin_tone
+
+
+def test_update_sim_not_exists(client):
+    sim_update = SimBase(
+        first_name='new name',
+        last_name='new last name',
+
+        hair_color=Hair.BLONDE,
+        eye_color=Eyes.ALIEN,
+        skin_tone=Skin.DARK
+    )
+     
+    response = client.put(
+        'sims/100',
+        json=jsonable_encoder(sim_update)
+    )
+
+    assert response is not None
+    assert response.status_code == 404
+
+    assert response.json() is not None
+    assert response.json() == {'detail': 'Sim not found'}
+
+
+def test_grow_up_sim(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                life_stage=LifeStage.ADULT,
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim_id = response.json()['id']
+    old_life_stage = response.json()['life_stage']
+    create_date = response.json()['last_update']
+
+    response = client.put(
+        f'sims/{sim_id}/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+
+    assert response.json() is not None
+
+    sim_db = response.json()
+
+    assert LifeStage(sim_db['life_stage']) == LifeStage(old_life_stage).next()
+
+    assert sim_db['last_update'] != create_date
+    assert sim_db['last_update'] > create_date
+
+
+def test_grow_up_default_life_stage(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim_id = response.json()['id']
+    old_life_stage = response.json()['life_stage']
+    create_date = response.json()['last_update']
+
+    response = client.put(
+        f'sims/{sim_id}/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+
+    assert response.json() is not None
+
+    sim_db = response.json()
+
+    assert LifeStage(sim_db['life_stage']) == LifeStage.TODDLER
+
+    assert sim_db['last_update'] != create_date
+    assert sim_db['last_update'] > create_date
+
+
+def test_grow_up_sim_not_exists(client):
+    response = client.put(
+        f'sims/1010/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 404
+
+    assert response.json() is not None
+    assert response.json() == {'detail': 'Sim not found'}
+
+
+def test_try_grow_up_elder(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                life_stage=LifeStage.ELDER,
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim_id = response.json()['id']
+
+    response = client.put(
+        f'sims/{sim_id}/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 400
+
+    assert response.json() is not None
+    assert response.json() == {'detail': 'Elders can\'t grow up'}

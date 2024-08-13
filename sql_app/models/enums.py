@@ -46,6 +46,12 @@ class LifeStage(enum.Enum):
     ADULT = 6
     ELDER = 7
 
+    def next(self):
+        v = self.value + 1
+        if v > 7:
+            raise ValueError('There is no next value')
+        return LifeStage(v)
+
 
 class SexualOrient(enum.Enum):
     NOT_SPECIFIED = 1
