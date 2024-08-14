@@ -351,3 +351,39 @@ def test_try_grow_up_elder(client):
 
     assert response.json() is not None
     assert response.json() == {'detail': 'Elders can\'t grow up'}
+
+
+def test_grow_up_plantsim_toddler(client):
+    response = client.post(
+        '/sims/',
+        json=jsonable_encoder(
+            SimCreate(
+                first_name= 'Bella',
+                last_name= 'Goth',
+
+                life_stage=LifeStage.TODDLER,
+                race=Race.PLANTSIM,
+
+                hair_color= Hair.BLACK,
+                eye_color= Eyes.BROWN,
+                skin_tone= Skin.MEDIUM,
+    )))
+    sim_id = response.json()['id']
+    create_date = response.json()['last_update']
+
+    response = client.put(
+        f'sims/{sim_id}/grow_up',
+        json={}
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+
+    assert response.json() is not None
+
+    sim_db = response.json()
+
+    assert LifeStage(sim_db['life_stage']) == LifeStage.ADULT
+
+    assert sim_db['last_update'] != create_date
+    assert sim_db['last_update'] > create_date

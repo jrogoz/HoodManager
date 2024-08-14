@@ -39,7 +39,10 @@ def grow_up_sim(db: Session, sim_id: int):
     if db_sim:
         if db_sim.life_stage == enums.LifeStage.ELDER:
             raise ValueError("Elders can't grow up")
-        setattr(db_sim, 'life_stage', db_sim.life_stage.next())
+        if db_sim.life_stage == enums.LifeStage.TODDLER and db_sim.race == enums.Race.PLANTSIM:
+            setattr(db_sim, 'life_stage', enums.LifeStage.ADULT)
+        else:
+            setattr(db_sim, 'life_stage', db_sim.life_stage.next())
         setattr(db_sim, 'last_update', datetime.datetime.now())
         db.commit()
         db.refresh(db_sim)

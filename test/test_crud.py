@@ -249,3 +249,29 @@ def test_try_grow_up_elder_sim(db_session):
     assert e_info is not None
     assert e_info.type == ValueError
     assert str(e_info.value) == 'Elders can\'t grow up'
+    
+
+def test_grow_up_plantsim_toddler(db_session):
+    sim = crud.create_sim(db_session, SimCreate(
+        first_name='Bella',
+        last_name='Goth',
+
+        hair_color=Hair.BLACK,
+        eye_color=Eyes.BROWN,
+        skin_tone=Skin.MEDIUM,
+
+        life_stage=LifeStage.TODDLER,
+        race=Race.PLANTSIM
+    ))
+    
+    create_date = sim.last_update
+    old_life_stage = sim.life_stage
+
+    sim_db = crud.grow_up_sim(db_session, sim_id=sim.id)
+
+    assert sim_db is not None
+
+    assert sim_db.life_stage == LifeStage.ADULT
+    
+    assert sim_db.last_update != create_date
+    assert sim_db.last_update > create_date
