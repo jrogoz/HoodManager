@@ -2,6 +2,11 @@ from fastapi import Depends, FastAPI, HTTPException
 import uvicorn
 from sqlalchemy.orm import Session
 
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from sql_app import crud, schemas
 from sql_app.models import models, enums
 from sql_app.database import SessionLocal, engine
@@ -61,4 +66,4 @@ def grow_up_sim(sim_id: int, db: Session = Depends(get_db)):
 
 
 if __name__ == '__main__':
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")
+    uvicorn.run("sql_app.main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")
